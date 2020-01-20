@@ -1,132 +1,41 @@
-export function get(target, path) {
-	if (!target || !path) return target;
-	var _t = target,
-		_p = String(path).split('.');
-
-	for (var i = 0; i < _p.length; i++) {
-		_t = _t[_p[i]];
-		if (!_t) break;
-	}
-
-	return _t;
-}
-
-export function pick(obj, arr, reject) {
-	var o = {};
-
-	if (reject) each(obj, function (val, key) {
-		if (arr.indexOf(key) < 0) o[key] = val;
-	});
-	else each(arr, function (val) {
-		o[val] = obj[val];
-	});
-
-	return o;
-}
-
-export function size(agg) {
-	return agg ? (isObject(agg) ? keys(agg).length : agg.length) : 0;
-}
-
-export function each(agg, fn) {
-	var _fn = true;
-	if (!agg || !isFunction(fn)) return;
-
-	if (isArray(agg)) {
-		for (var i = 0; i < agg.length; i++) {
-			_fn = fn(agg[i], i);
-			if (_fn !== undefined && _fn === false) break;
-		}
-	}
-
-	if (isObject(agg)) {
-		var index = 0;
-		for (var k in agg) {
-			_fn = fn(agg[k], k, index++);
-			if (_fn !== undefined && _fn === false) break;
-		}
-	}
-}
-
-export function isFunction(fn) {
-	return fn && typeof fn === 'function';
-}
-
-export function isString(str) {
-	return str && typeof str === 'string';
-}
-
-export function isObject(obj) {
-	return obj && typeof obj === 'object' && !obj.length;
-}
-
-export function isArray(arr) {
-	return arr && typeof arr === 'object' && arr.length >= 0
-}
-
-export function includes(arr, target) {
-	var __has = false;
-
-	each(arr, function (val) {
-		if (isFunction(target) && target(val)) __has = true;
-		else if (target === val) __has = true;
-
-		if (__has) return false;
-	});
-
-	return __has;
-}
-
-export function compact(arr) {
-	var __arr = [];
-
-	each(arr, function (val) {
-		if (!!val) __arr.push(val);
-	});
-
-	return __arr;
-}
-
-export function uniq(arr) {
-	var __arr = [];
-
-	each(arr, function (val) {
-		if (!includes(__arr, val)) __arr.push(val);
-	});
-
-	return __arr;
-}
-
-export function extend(a, b) {
-	each(b, function (val, key) {
-		a[key] = val
-	});
-
-	return a;
-}
-
-export function split(str, s) {
-	if (!str || !isString(str)) return [];
-	return str.split(s)
-}
-
-export function keys(obj) {
-	return isObject(obj) ? Object.keys(obj) : [];
-}
-
-export function timer(time, fn) {
-	var c = setInterval(function () {
-		if (time < 1000) clearInterval(c);
-		else (time -= 1000, fn(time, c));
-	}, 1000);
-}
+import camelCase from './camelCase.js'
+import get from './get.js'
+import pick from './pick.js'
+import pickBy from './pickBy.js'
+import equal from './equal.js'
+import indexOf from './indexOf.js'
+import filter from './filter.js'
+import findKey from './findKey.js'
+import find from './find.js'
+import size from './size.js'
+import each from './each.js'
+import transform from './transform.js'
+import isFunction from './isFunction.js'
+import isString from './isString.js'
+import isObject from './isObject.js'
+import isArray from './isArray.js'
+import includes from './includes.js'
+import compact from './compact.js'
+import uniq from './uniq.js'
+import extend from './extend.js'
+import split from './split.js'
+import keysBy from './keysBy.js'
+import timer from './timer.js'
+import clone from './clone.js'
+import keys from './keys.js'
 
 export default {
 	keys,
+	keysBy,
+	filter,
+	find,
+	findKey,
+	indexOf,
 	extend,
 	split,
 	get,
 	pick,
+	pickBy,
 	size,
 	each,
 	isFunction,
@@ -135,5 +44,10 @@ export default {
 	isArray,
 	compact,
 	uniq,
-	includes
+	includes,
+	camelCase,
+	equal,
+	transform,
+	timer,
+	clone
 };
