@@ -1,12 +1,10 @@
 {
- "name": "task-queue",
- "description": "For web front-end processing of bulk tasks.",
+ "name": "dev-utils",
  "version": "0.0.1",
  "license": "MIT",
  "keywords": [
-  "Task Queue",
-  "Upload auto",
-  "Website"
+  "dev-utils",
+  "Dev Utils"
  ],
  "devDependencies": {
   "rollup": "*",
