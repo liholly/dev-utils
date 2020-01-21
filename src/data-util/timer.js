@@ -1,6 +1,9 @@
-export default function (time, fn) {
+export default function (time, fn, step) {
+	var _step = typeof step !== 'undefined' ? step : 1000;
 	var c = setInterval(function () {
-		if (time < 1000) clearInterval(c);
-		else (time -= 1000, fn(time, c));
-	}, 1000);
+		if (time < _step) clearInterval(c);
+		else (time -= _step, fn(time, c));
+	}, _step);
+	
+	return c;
 }
