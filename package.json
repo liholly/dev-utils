@@ -1,0 +1,19 @@
+{
+ "name": "task-queue",
+ "description": "For web front-end processing of bulk tasks.",
+ "version": "0.0.1",
+ "license": "MIT",
+ "keywords": [
+  "Task Queue",
+  "Upload auto",
+  "Website"
+ ],
+ "devDependencies": {
+  "rollup": "*",
+  "rollup-watch": "*"
+ },
+ "scripts": {
+  "dev": "rollup -c -w",
+  "demo": "node example/index.js"
+ }
+}
