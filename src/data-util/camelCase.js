@@ -1,11 +1,20 @@
-import transform from './transform.js'
+import each from './each.js'
 import split from './split.js'
-import size from './size.js'
+import indexOf from './indexOf.js'
 
 export default function (str) {
-	var a = split(str, '-');
-	var _arr = size(a) ? a : split(str, '_');
-	return transform(_arr, function (val, index, res) {
-		res += (index !== 0 ? val.splice(index, 1, val[0].toUpperCase()) : val)
-	}, '')
+	var strIn;
+	each(['-', '_', '~', '@', '+'], function (spt) {
+		if (indexOf(str, spt) > -1) {
+			strIn = split(str, spt);
+			return false
+		}
+	});
+
+	var strOut = '';
+	each(strIn, function (val, index) {
+		strOut += (index !== 0 ? val.replace(val[0], val[0].toUpperCase()) : val)
+	});
+
+	return strOut
 }
