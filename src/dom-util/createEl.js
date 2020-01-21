@@ -1,4 +1,5 @@
 import setAttr from './setAttr.js'
+import setHtml from './setHtml.js'
 
 export default function (tagName, attach) {
 	var _el = document.createElement(tagName);
