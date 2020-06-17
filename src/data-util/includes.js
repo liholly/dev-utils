@@ -1,4 +1,7 @@
-//区别于lodash 这个传入函数当作条件
+/**
+ * 判断数组中是否存在某个值
+ * 区别于lodash target可以传入函数当作条件
+ */
 import each from './each.js'
 import isFunction from './isFunction.js'
 

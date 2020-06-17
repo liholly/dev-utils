@@ -1,9 +1,10 @@
-export default function (time, fn, step) {
+export default function (time, tickFn, step) {
 	var _step = typeof step !== 'undefined' ? step : 1000;
 	var c = setInterval(function () {
 		if (time < _step) clearInterval(c);
-		else (time -= _step, fn(time, c));
+		tickFn(time, c);
+		time -= _step;
 	}, _step);
-	
+
 	return c;
 }
