@@ -1,14 +1,13 @@
-export default function (timeout, tickFn, stepTime) {
-	var interval, timeNum = 0, step = stepTime || 200, ctx, hasStop = false;
+export default function (tickFn, stepTime) {
+	var interval, step = stepTime || 200;
 
-	function stop(c) {
-		hasStop = true;
-		ctx = c
+	function stop() {
+		clearInterval(interval);
 	}
 
 	interval = setInterval(function () {
-		tickFn(stop);
-		if (hasStop || (timeNum > timeout)) clearInterval(interval);
-		else timeNum += step;
+		tickFn(stop)
 	}, step);
+
+	return interval
 }
