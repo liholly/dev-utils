@@ -4,5 +4,6 @@
  * @returns {boolean}
  */
 export default function (el) {
+	if (!el) return true;
 	return el.children ? (el.children || []).length === 0 : true
 }
