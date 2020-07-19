@@ -9,13 +9,16 @@ import setHtml from './setHtml.js'
  */
 export default function (tagName, attach) {
 	var _isTag = tagName.length > 10 || (!!tagName.match(/</));
-	var _el = document.createElement(_isTag ? 'div' : tagName);
+	var __el__ = document.createElement(_isTag ? 'div' : tagName);
+	var _el;
 
-	//根据传入的tagName类型决定
+	//根据传入的tagName类型决定 删除外容器，子元素被引用所以不会被删
 	if (_isTag) {
-		setHtml(_el, tagName);
-		_el = (_el.children || [])[0];
+		setHtml(__el__, tagName);
+		_el = (__el__.children || [])[0];
+		__el__.remove();
 	}
+	else _el = __el__;
 
 	//设置属性
 	var _k, _i;
