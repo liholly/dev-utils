@@ -25,8 +25,8 @@ export default function (tagName, attach) {
 	if (attach) {
 		if (typeof attach === 'string') setHtml(_el, attach);
 		else for (_k in attach) {
-			if (_k === 'style') for (_i in attach[_k]) _el.style[_k] = attach[_k][_i];
-			else setAttr(_el, attach[_k]);
+			if (_k === 'style' && typeof attach[_k] === 'object') for (_i in attach[_k]) _el.style[_k] = attach[_k][_i];
+			else setAttr(_el, _k, attach[_k]);
 		}
 	}
 	return _el;
