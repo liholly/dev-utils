@@ -101,20 +101,20 @@
 		return o;
 	}
 
+	function transform (agg, fn, res) {
+		each(agg, function (val, key, index) {
+			var _is = fn.call(null, val, key, res, index);
+			return _is !== 'undefined' ? _is : true
+		});
+		return res
+	}
+
 	function keys(obj) {
 		return typeof obj === 'object' ? Object.keys(obj) : [];
 	}
 
 	function size (agg) {
 		return agg ? (isObject(agg) ? keys(agg).length : agg.length) : 0;
-	}
-
-	function transform (agg, fn, res) {
-		if (size(agg)) each(agg, function (val, key, index) {
-			var _is = fn.call(null, val, key, res, index);
-			return _is !== 'undefined' ? _is : true
-		});
-		return res
 	}
 
 	//注意务必传入可枚举的对象
@@ -168,7 +168,10 @@
 		return filter(agg, target, 1)
 	}
 
-	//区别于lodash 这个传入函数当作条件
+	/**
+	 * 判断数组中是否存在某个值
+	 * 区别于lodash target可以传入函数当作条件
+	 */
 
 	function includes (arr, target) {
 		var __has = false;
@@ -215,14 +218,20 @@
 		return keys(filter(obj, target));
 	}
 
-	function timer (time, fn, step) {
-		var _step = typeof step !== 'undefined' ? step : 1000;
-		var c = setInterval(function () {
-			if (time < _step) clearInterval(c);
-			else (time -= _step, fn(time, c));
+	function timer (time, tickFn, step) {
+		var interval, _step = (typeof step !== 'undefined') ? step : 1000;
+
+		function stop() {
+			clearInterval(interval);
+		}
+
+		interval = setInterval(function () {
+			if (time < _step) stop();
+			tickFn(time, stop);
+			time -= _step;
 		}, _step);
-		
-		return c;
+
+		return interval;
 	}
 
 	function clone (obj) {
@@ -278,8 +287,12 @@
 		clone
 	};
 
-	function setAttr (el, attrName, value) {
-		el.setAttribute(attrName, value);
+	function setAttrs (el, attach) {
+		var _k, _i;
+		for (_k in attach) {
+			if (_k === 'style' && typeof attach[_k] === 'object') for (_i in attach[_k]) el.style[_k] = attach[_k][_i];
+			else el.setAttribute(_k, attach[_k]);
+		}
 		return el
 	}
 
@@ -288,16 +301,41 @@
 		return el
 	}
 
-	function createEl (tagName, attach) {
-		var _el = document.createElement(tagName);
-		var _k;
-		if (attach) {
-			if (typeof attach === 'string') setHtml(_el, attach);
-			else for (_k in attach) {
-				if (_k === 'style') _el.style[_k] = attach.style[_k];
-				else setAttr(_el, attach[k]);
+	/**
+	 * 创建html元素实例万能方法
+	 *  也就是说，除第一个参数是必须的，还可以传入三个附加参数，只要保持参数的类型，参数次序随意。
+	 *  	object	表示附加到元素上的属性 style属性支持两种格式：字符串|对象
+	 *  	array	表示子元素
+	 *  	string	表示元素内文本
+	 *  测试
+	 *  appendTo(createEl('<div id="lihong"></div>',{class:'active'},[createEl('button','test'),createEl('button','test')],'666666'),getEl('body'))
+	 * @param tagName 标签名|html
+	 * @returns {Element}
+	 */
+	function createEl (tagName) {
+		//处理tagName 创建el
+		var _i, _k;
+		var _isTag = tagName.length < 10 && (!tagName.match(/</));
+		var __el__ = document.createElement(_isTag ? tagName : 'div');
+		var _el = _isTag ? __el__ : (setHtml(__el__, tagName).children || [])[0];
+		if (!_isTag) __el__.remove();
+
+		//附加项
+		var _temp, _props, _children, _text;
+		for (_i = 0; _i < arguments.length; _i++) {
+			if (_i === 0) continue;
+			_temp = arguments[_i];
+			if(typeof _temp === 'object'){
+				if('length' in _temp) _children = _temp;
+				else _props = _temp;
 			}
+			else _text = _temp;
 		}
+
+		if (_text) _el.innerText = _text;
+		if (_props) setAttrs(_el, _props);
+		if (_children) for (_k = 0; _k < _children.length; _k++) _el.appendChild(_children[_k]);
+
 		return _el;
 	}
 
@@ -334,6 +372,11 @@
 		return el
 	}
 
+	function setAttr (el, attrName, value) {
+		el.setAttribute(attrName, value);
+		return el
+	}
+
 	function setCss (text) {
 		var styleEl = createEl('style');
 		setHtml(styleEl, text);
@@ -341,7 +384,10 @@
 	}
 
 	function addClass (el, className) {
-		el.classList.add(className);
+		if ((typeof el === 'object') && ('length' in el)) el.forEach(function (item) {
+			item.classList.add(className);
+		});
+		else el.classList.add(className);
 		return el;
 	}
 
@@ -359,7 +405,52 @@
 	}
 
 	function removeClass (el, className) {
-		el.classList.remove(className);
+		if ((typeof el === 'object') && ('length' in el)) {
+			el.forEach(function (item) {
+				item.classList.remove(className);
+			});
+		}
+		else el.classList.remove(className);
+		return el;
+	}
+
+	/**
+	 * appendChild的别名函数
+	 * 允许一次性追加多个元素
+	 * @param el 容器
+	 * @returns {*}
+	 */
+	function append (el) {
+		var _i;
+		for (_i = 0; _i < arguments.length; _i++) {
+			if (_i === 0) continue;
+			el.appendChild([arguments[_i]]);
+		}
+
+		return el;
+	}
+
+	/**
+	 * 
+	 * https://blog.csdn.net/csdnlinyongsheng/article/details/99960935
+	 * @param el
+	 * @param son
+	 * @param inner
+	 * @returns {*}
+	 */
+	function insertBefore (el, son, inner) {
+		var _children = el.children[0];
+		var _el = inner ? _children : el;
+		if (!_children) el.appendChild(son);
+		else _el.parentNode.insertBefore(son, _el);
+		return el;
+	}
+
+	function insertAfter (el, son, inner) {
+		var _children = el.children[0];
+		var _el = inner ? _children : el;
+		if (!_children) el.appendChild(son);
+		else _el.parentNode.insertBefore(son, _el);
 		return el;
 	}
 
@@ -377,6 +468,11 @@
 		return el.outerHTML
 	}
 
+	/**
+	 * 获取元素的子元素列表
+	 * @param el
+	 * @returns {children|jQuery.children|boolean|*|HTMLElement[]}
+	 */
 	function getChildren (el) {
 		return el.children
 	}
@@ -406,7 +502,11 @@
 		getHtmlOuter,
 		getChildren,
 		getAttr,
-		setHtml
+		setHtml,
+		append,
+		insertBefore,
+		insertAfter,
+		setAttrs,
 	};
 
 	function addHandler(element, type, handler) { //添加事件

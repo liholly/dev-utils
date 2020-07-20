@@ -12,6 +12,10 @@ import addClass from './addClass.js'
 import setStyle from './setStyle.js'
 import removeAttr from './removeAttr.js'
 import removeClass from './removeClass.js'
+import append from './append.js'
+import insertBefore from './insertBefore.js'
+import insertAfter from './insertAfter.js'
+import setAttrs from './setAttrs.js'
 
 //查
 import getEl from './getEl.js'
@@ -40,5 +44,9 @@ export default {
 	getHtmlOuter,
 	getChildren,
 	getAttr,
-	setHtml
+	setHtml,
+	append,
+	insertBefore,
+	insertAfter,
+	setAttrs,
 }
