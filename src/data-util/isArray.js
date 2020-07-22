@@ -1,3 +1,3 @@
 export default function (arr) {
-	return arr && typeof arr === 'object' && arr.length >= 0
+	return arr && typeof arr === 'object' && 'length' in arr
 }

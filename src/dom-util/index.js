@@ -24,6 +24,8 @@ import getHtml from './getHtml.js'
 import getHtmlOuter from './getHtmlOuter.js'
 import getChildren from './getChildren.js'
 import getAttr from './getAttr.js'
+import getWidth from './getWidth.js'
+import getHeight from './getHeight.js'
 
 export default {
 	createEl,
@@ -49,4 +51,6 @@ export default {
 	insertBefore,
 	insertAfter,
 	setAttrs,
+	getWidth,
+	getHeight
 }

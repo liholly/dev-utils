@@ -4,7 +4,7 @@
 }((function () { 'use strict';
 
 	function isArray (arr) {
-		return arr && typeof arr === 'object' && arr.length >= 0
+		return arr && typeof arr === 'object' && 'length' in arr
 	}
 
 	function isFunction (fn) {
@@ -424,33 +424,40 @@
 		var _i;
 		for (_i = 0; _i < arguments.length; _i++) {
 			if (_i === 0) continue;
-			el.appendChild([arguments[_i]]);
+			el.appendChild(arguments[_i]);
 		}
 
 		return el;
 	}
 
 	/**
-	 * 
+	 * 插入元素到目标元素前面
 	 * https://blog.csdn.net/csdnlinyongsheng/article/details/99960935
+	 * 测试 aa = createEl('div','123456');append(getEl('body'),aa);insertBefore(aa,createEl('div','789'),true);
 	 * @param el
 	 * @param son
 	 * @param inner
 	 * @returns {*}
 	 */
 	function insertBefore (el, son, inner) {
-		var _children = el.children[0];
+		var _children = el.firstChild;
 		var _el = inner ? _children : el;
 		if (!_children) el.appendChild(son);
 		else _el.parentNode.insertBefore(son, _el);
 		return el;
 	}
 
+	/**
+	 * 插入元素到目标元素后面
+	 * 测试 aa = createEl('div','123456');append(getEl('body'),aa);insertAfter(aa,createEl('div','789'));
+	 * @param el
+	 * @param son
+	 * @param inner
+	 * @returns {*}
+	 */
 	function insertAfter (el, son, inner) {
-		var _children = el.children[0];
-		var _el = inner ? _children : el;
-		if (!_children) el.appendChild(son);
-		else _el.parentNode.insertBefore(son, _el);
+		if (inner) el.appendChild(son);
+		else el.parentNode.insertBefore(son, el.nextSibling);
 		return el;
 	}
 
@@ -481,6 +488,14 @@
 		return el.getAttribute(attrName)
 	}
 
+	function getWidth (el, inner) {
+		return inner ? el.clientWidth : el.offsetWidth
+	}
+
+	function getHeight (el, inner) {
+		return inner ? el.clientHeight : el.offsetHeight
+	}
+
 	//增删改
 
 	var dom = {
@@ -507,6 +522,8 @@
 		insertBefore,
 		insertAfter,
 		setAttrs,
+		getWidth,
+		getHeight
 	};
 
 	function addHandler(element, type, handler) { //添加事件

@@ -1,7 +1,13 @@
+/**
+ * 插入元素到目标元素后面
+ * 测试 aa = createEl('div','123456');append(getEl('body'),aa);insertAfter(aa,createEl('div','789'));
+ * @param el
+ * @param son
+ * @param inner
+ * @returns {*}
+ */
 export default function (el, son, inner) {
-	var _children = el.children[0];
-	var _el = inner ? _children : el;
-	if (!_children) el.appendChild(son);
-	else _el.parentNode.insertBefore(son, _el);
+	if (inner) el.appendChild(son);
+	else el.parentNode.insertBefore(son, el.nextSibling);
 	return el;
 }

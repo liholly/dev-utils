@@ -1,3 +1,3 @@
-export default function(el){
-	return el.offsetHeight
+export default function (el, inner) {
+	return inner ? el.clientHeight : el.offsetHeight
 }

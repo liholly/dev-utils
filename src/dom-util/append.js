@@ -8,7 +8,7 @@ export default function (el) {
 	var _i;
 	for (_i = 0; _i < arguments.length; _i++) {
 		if (_i === 0) continue;
-		el.appendChild([arguments[_i]]);
+		el.appendChild(arguments[_i]);
 	}
 
 	return el;
