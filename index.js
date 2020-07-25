@@ -1,15 +1,11 @@
 import data from './src/data-util/index.js';
 import dom from './src/dom-util/index.js';
 import event from './src/event-util/index.js';
+import setup from './src/setup.js';
 
-data.each(data, function (fn, key) {
-	window[key] = fn;
-});
-
-data.each(dom, function (fn, key) {
-	window[key] = fn;
-});
-
-data.each(event, function (fn, key) {
-	window[key] = fn;
-});
+export default {
+	data,
+	dom,
+	event,
+	setup
+};

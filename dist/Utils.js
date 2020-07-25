@@ -1,7 +1,8 @@
-(function (factory) {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 	typeof define === 'function' && define.amd ? define(factory) :
-	factory();
-}((function () { 'use strict';
+	(global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Utils = factory());
+}(this, (function () { 'use strict';
 
 	function isArray (arr) {
 		return arr && typeof arr === 'object' && 'length' in arr
@@ -638,16 +639,27 @@
 		getCharCode
 	};
 
-	data.each(data, function (fn, key) {
-		window[key] = fn;
-	});
+	/**
+	 * 装载工具
+	 * @param ogg    要装载的对象
+	 * @param target    装载的目标对象  选填，不填则直接装载到局部函数内部
+	 * @param pick    要装载的函数    选题，不填则全部装载
+	 */
+	function setup (ogg, target, pick) {
+		each(pick || ogg, function (v, k) {
+			var __v = pick ? ogg[v] : v;
+			var __k = pick ? v : k;
+			target[__k] = __v;
+		});
+	}
 
-	data.each(dom, function (fn, key) {
-		window[key] = fn;
-	});
+	var index = {
+		data,
+		dom,
+		event,
+		setup
+	};
 
-	data.each(event, function (fn, key) {
-		window[key] = fn;
-	});
+	return index;
 
 })));
