@@ -36,6 +36,12 @@
 		}
 	}
 
+	function adapt (obj, lut) {
+		return each(obj, function (res, val, key) {
+			res[lut[key] || key] = val;
+		})
+	}
+
 	function isString (str) {
 		return str && typeof str === 'string';
 	}
@@ -76,38 +82,73 @@
 		return strOut
 	}
 
-	function get (target, path) {
-		if (!target || !path) return target;
-		var _t = target,
-			_p = String(path).split('.');
+	function clone (obj) {
+	    var res = new obj.constructor;
 
-		for (var i = 0; i < _p.length; i++) {
-			_t = _t[_p[i]];
-			if (!_t) break;
+	    function run(org, target) {
+	        var i, k;
+
+	        function a(k) {
+	            var v = org[k];
+	            var constructor = v.constructor;
+	            if (typeof v === 'object') {
+	                target[k] = new constructor;
+	                run(v, target[k]);
+	            }
+	            else target[k] = v;
+	        }
+
+	        if ('length' in org) for (i = 0; i < org.length; i++) a(i);
+	        else for (k in org) a(k);
+	    }
+
+	    run(obj, res);
+
+	    return res;
+	}
+
+	function compact (arr) {
+		var __arr = [];
+
+		each(arr, function (val) {
+			if (!!val) __arr.push(val);
+		});
+
+		return __arr;
+	}
+
+	/**
+	 * 判断实体是否为空
+	 * @param ogg object|array|number|string
+	 * @returns {boolean}
+	 */
+	function isEmpty (ogg) {
+		if (!ogg) return true;
+		if (typeof ogg === 'object') return Object.keys(ogg).length === 0;
+		else return typeof ogg === 'string' ? ogg.length === 0 : ogg === 0;
+	}
+
+	/**
+	 * 检查属性是否值都是真
+	 * @param obj	被检查的对象
+	 * @param keys	被检查的属性
+	 * @returns {boolean}
+	 */
+	function complete (obj, keys) {
+		var affirm = true;
+
+		function empty(item) {
+			return (typeof item === 'object') ? isEmpty(item) : (item === 0 ? false : !item)
 		}
 
-		return _t;
-	}
-
-	function pick (obj, arr, reject) {
-		var o = {};
-
-		if (reject) each(obj, function (val, key) {
-			if (arr.indexOf(key) < 0) o[key] = val;
-		});
-		else each(arr, function (val) {
-			o[val] = obj[val];
+		each(keys || obj, function (val) {
+			if (keys ? empty(obj[val]) : empty(val)) {
+				affirm = false;
+				return false;
+			}
 		});
 
-		return o;
-	}
-
-	function transform (agg, fn, res) {
-		each(agg, function (val, key, index) {
-			var _is = fn.call(null, val, key, res, index);
-			return _is !== 'undefined' ? _is : true
-		});
-		return res
+		return affirm
 	}
 
 	function keys(obj) {
@@ -137,8 +178,38 @@
 		return res
 	}
 
+	function escape2Html (str) {
+		var arrEntities = {'lt': '<', 'gt': '>', 'nbsp': ' ', 'amp': '&', 'quot': '"'};
+		return str.replace(/&(lt|gt|nbsp|amp|quot);/ig, function (all, t) {
+			return arrEntities[t];
+		});
+	}
+
+	function extend (a, b) {
+		each(b, function (val, key) {
+			a[key] = val;
+		});
+
+		return a;
+	}
+
+	function transform (agg, fn, res) {
+		each(agg, function (val, key, index) {
+			var _is = fn.call(null, val, key, res, index);
+			return _is !== 'undefined' ? _is : true
+		});
+		return res
+	}
+
 	//区别于lodash 这个可以查找对象并把符合条件的键值组成新对象返回
 
+	/**
+	 * 筛选结果
+	 * Utils.data.filter([{a:{b:1},c:{}},{a:{b:2},c:[]}],function(item){return item.a.b===1})
+	 * @param agg    对象或数组
+	 * @param target    搜选的条件
+	 * @param limit    长度限制，也就是最多可以查找多少个结果
+	 */
 	function filter (agg, target, limit) {
 		var index = 0;
 		return transform(agg, function (item, key, res) {
@@ -157,16 +228,61 @@
 		}, isArray(agg) ? [] : {})
 	}
 
-	function pickBy (obj, target) {
-		return filter(obj, target)
+	function find (agg, target) {
+		return filter(agg, target, 1)
 	}
 
 	function findKey (agg, target) {
 		return isObject(agg) ? keys(filter(agg, target, 1))[0] : null
 	}
 
-	function find (agg, target) {
-		return filter(agg, target, 1)
+	function get (target, path) {
+		if (!target || !path) return target;
+		var _t = target,
+			_p = String(path).split('.');
+
+		for (var i = 0; i < _p.length; i++) {
+			_t = _t[_p[i]];
+			if (!_t) break;
+		}
+
+		return _t;
+	}
+
+	function html2Escape (sHtml) {
+		return sHtml.replace(/[<>&"]/g, function (c) {
+			return {'<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;'}[c];
+		});
+	}
+
+	function htmlDecode (str) {
+		return str ? str.replace(/&((g|l|quo)t|amp|#39|nbsp);/g, function (m) {
+			return {
+				'&lt;': '<',
+				'&amp;': '&',
+				'&quot;': '"',
+				'&gt;': '>',
+				'&#39;': "'",
+				'&nbsp;': ' '
+			}[m]
+		}) : '';
+	}
+
+	function htmlEncode (str, reg) {
+		return str ? str.replace(reg || /[&<">'](?:(amp|lt|quot|gt|#39|nbsp|#\d+);)?/g, function (a, b) {
+			if (b) {
+				return a;
+			} else {
+				return {
+					'<': '&lt;',
+					'&': '&amp;',
+					'"': '&quot;',
+					'>': '&gt;',
+					"'": '&#39;'
+				}[a]
+			}
+
+		}) : '';
 	}
 
 	/**
@@ -187,36 +303,98 @@
 		return __has;
 	}
 
-	function compact (arr) {
-		var __arr = [];
-
-		each(arr, function (val) {
-			if (!!val) __arr.push(val);
-		});
-
-		return __arr;
-	}
-
-	function uniq (arr) {
-		var __arr = [];
-
-		each(arr, function (val) {
-			if (!includes(__arr, val)) __arr.push(val);
-		});
-
-		return __arr;
-	}
-
-	function extend (a, b) {
-		each(b, function (val, key) {
-			a[key] = val;
-		});
-
-		return a;
-	}
-
 	function keysBy (obj, target) {
 		return keys(filter(obj, target));
+	}
+
+	function loop (tickFn, stepTime) {
+		var interval, step = stepTime || 200;
+
+		function stop() {
+			clearInterval(interval);
+		}
+
+		interval = setInterval(function () {
+			tickFn(stop);
+		}, step);
+
+		return interval
+	}
+
+	function mergeSpace (str) {
+		str = str.replace(/(\s|&nbsp;)+/g, ' ');
+		return str;
+	}
+
+	function move (arr, index, targetIndex) {
+		var call = arr[index];
+		arr.splice(index, 1);
+		arr.splice(targetIndex, 0, call);
+		return arr;
+	}
+
+	/**
+	 * 将空格转义符转回正常的空格
+	 * @param str
+	 */
+	function nbsp2Space (str) {
+		var arrEntities = {'nbsp': ' '};
+		return str.replace(/&(nbsp);/ig, function (all, t) {
+			return arrEntities[t]
+		})
+	}
+
+	function pick (obj, arr, reject) {
+		var o = {};
+
+		if (reject) each(obj, function (val, key) {
+			if (arr.indexOf(key) < 0) o[key] = val;
+		});
+		else each(arr, function (val) {
+			o[val] = obj[val];
+		});
+
+		return o;
+	}
+
+	function pickBy (obj, target) {
+		return filter(obj, target)
+	}
+
+	function remove (agg, index) {
+		var dx = agg[index];
+		if (isArray(agg)) agg.splice(index, 1);
+		else delete agg[index];
+		return dx;
+	}
+
+	/**
+	 * 删除html中的HTML标签
+	 * @param tab html字符实体
+	 */
+	function removeHtmlTab (tab) {
+		return tab.replace(/<[^<>]+?>/g, '');
+	}
+
+	/**
+	 * html字符实体的所有换行符转为html标签
+	 * @param str
+	 */
+	function return2Br (str) {
+		return str.replace(/\r?\n/g, "<br />");
+	}
+
+	function strIndexOf (agg, str) {
+		var res;
+
+		each(agg, function (val, index) {
+			if (val.indexOf(str) > -1) {
+				res = index;
+				return false;
+			}
+		});
+		
+		return res;
 	}
 
 	function timer (time, tickFn, step) {
@@ -235,57 +413,65 @@
 		return interval;
 	}
 
-	function clone (obj) {
-	    var res = new obj.constructor;
+	function trimBr (str) {
+		str = str.replace(/((\s|&nbsp;)*\r?\n){3,}/g, "\r\n\r\n");//限制最多2次换行
+		str = str.replace(/^((\s|&nbsp;)*\r?\n)+/g, '');//清除开头换行
+		str = str.replace(/((\s|&nbsp;)*\r?\n)+$/g, '');//清除结尾换行
+		return str;
+	}
 
-	    function run(org, target) {
-	        var i, k;
+	function uniq (arr) {
+		var __arr = [];
 
-	        function a(k) {
-	            var v = org[k];
-	            var constructor = v.constructor;
-	            if (typeof v === 'object') {
-	                target[k] = new constructor;
-	                run(v, target[k]);
-	            }
-	            else target[k] = v;
-	        }
+		each(arr, function (val) {
+			if (!includes(__arr, val)) __arr.push(val);
+		});
 
-	        if ('length' in org) for (i = 0; i < org.length; i++) a(i);
-	        else for (k in org) a(k);
-	    }
-
-	    run(obj, res);
-
-	    return res;
+		return __arr;
 	}
 
 	var data = {
-		keys,
-		keysBy,
+		adapt,
+		camelCase,
+		clone,
+		compact,
+		complete,
+		each,
+		equal,
+		escape2Html,
+		extend,
 		filter,
 		find,
 		findKey,
-		indexOf,
-		extend,
-		split,
 		get,
+		html2Escape,
+		htmlDecode,
+		htmlEncode,
+		includes,
+		indexOf,
+		isArray,
+		isEmpty,
+		isFunction,
+		isObject,
+		isString,
+		keys,
+		keysBy,
+		loop,
+		mergeSpace,
+		move,
+		nbsp2Space,
 		pick,
 		pickBy,
+		remove,
+		removeHtmlTab,
+		return2Br,
 		size,
-		each,
-		isFunction,
-		isString,
-		isObject,
-		isArray,
-		compact,
-		uniq,
-		includes,
-		camelCase,
-		equal,
-		transform,
+		split,
+		strIndexOf,
 		timer,
-		clone
+		transform,
+		trimBr,
+		uniq,
 	};
 
 	function setAttrs (el, attach) {

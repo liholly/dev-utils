@@ -4,6 +4,13 @@ import isFunction from './isFunction.js'
 import isArray from './isArray.js'
 import equal from './equal.js'
 
+/**
+ * 筛选结果
+ * Utils.data.filter([{a:{b:1},c:{}},{a:{b:2},c:[]}],function(item){return item.a.b===1})
+ * @param agg    对象或数组
+ * @param target    搜选的条件
+ * @param limit    长度限制，也就是最多可以查找多少个结果
+ */
 export default function (agg, target, limit) {
 	var index = 0;
 	return transform(agg, function (item, key, res) {
