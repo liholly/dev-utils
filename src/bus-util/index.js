@@ -28,7 +28,6 @@ function emit(type, n) {
 			events[i](n)
 		}
 	}
-	else console.warn('Call "type" is empty!');
 }
 
 export default {

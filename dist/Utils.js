@@ -1,7 +1,7 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 	typeof define === 'function' && define.amd ? define(factory) :
-	(global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Utils = factory());
+	(global = global || self, global.Utils = factory());
 }(this, (function () { 'use strict';
 
 	function isArray (arr) {
@@ -149,6 +149,30 @@
 		});
 
 		return affirm
+	}
+
+	/**
+	 * 防抖函数
+	 * @param fn    源函数
+	 * @param delay    延迟时间
+	 * @returns {*}
+	 */
+	function debounce (fn, delay) {
+		var __present = true;
+		var __arguments;
+
+		return function () {
+			__arguments = arguments;
+
+			//在既定时间内只执行一次
+			if (__present) {
+				__present = false;
+				setTimeout(function () {
+					fn.apply(null, __arguments);
+					__present = true;
+				}, delay || 0);
+			}
+		}
 	}
 
 	function keys(obj) {
@@ -384,6 +408,28 @@
 		return str.replace(/\r?\n/g, "<br />");
 	}
 
+	/**
+	 * 节流函数
+	 * @param fn    源函数
+	 * @param overtime 节流过期时间 int
+	 * @returns {*}
+	 */
+	function throttle (fn, overtime) {
+		var __present = true;
+
+		return function () {
+			//已经过期的才可以执行
+			if (__present) {
+				fn.apply(null, arguments);
+				__present = false;
+				//立即计时
+				setTimeout(function () {
+					__present = true;
+				}, overtime || 0);
+			}
+		}
+	}
+
 	function strIndexOf (agg, str) {
 		var res;
 
@@ -436,6 +482,7 @@
 		clone,
 		compact,
 		complete,
+		debounce,
 		each,
 		equal,
 		escape2Html,
@@ -467,6 +514,7 @@
 		return2Br,
 		size,
 		split,
+		throttle,
 		strIndexOf,
 		timer,
 		transform,
@@ -855,7 +903,6 @@
 				events[i](n);
 			}
 		}
-		else console.warn('Call "type" is empty!');
 	}
 
 	var bus = {
@@ -876,6 +923,22 @@
 			target[__k] = __v;
 		});
 	}
+
+	//以下是测试环境用的正式生产时去掉
+	data.each(data, function (fn, key) {
+		window[key] = fn;
+	});
+
+	data.each(dom, function (fn, key) {
+		window[key] = fn;
+	});
+
+	data.each(event, function (fn, key) {
+		window[key] = fn;
+	});
+
+	window[bus] = bus;
+
 
 	var index = {
 		data,
