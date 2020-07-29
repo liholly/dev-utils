@@ -3,7 +3,7 @@ import camelCase from './camelCase.js'
 import clone from './clone.js'
 import compact from './compact.js'
 import complete from './complete.js'
-import debounce from './debounce.js'
+// import debounce from './debounce.js'
 import each from './each.js'
 import equal from './equal.js'
 import escape2Html from './escape2Html.js'
@@ -35,7 +35,7 @@ import removeHtmlTab from './removeHtmlTab.js'
 import return2Br from './return2Br.js'
 import size from './size.js'
 import split from './split.js'
-import throttle from './throttle.js'
+// import throttle from './throttle.js'
 import strIndexOf from './strIndexOf.js'
 import timer from './timer.js'
 import transform from './transform.js'
@@ -48,7 +48,7 @@ export default {
 	clone,
 	compact,
 	complete,
-	debounce,
+	// debounce,
 	each,
 	equal,
 	escape2Html,
@@ -80,7 +80,7 @@ export default {
 	return2Br,
 	size,
 	split,
-	throttle,
+	// throttle,
 	strIndexOf,
 	timer,
 	transform,

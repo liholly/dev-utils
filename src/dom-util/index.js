@@ -16,6 +16,9 @@ import append from './append.js'
 import insertBefore from './insertBefore.js'
 import insertAfter from './insertAfter.js'
 import setAttrs from './setAttrs.js'
+import hasClass from './hasClass.js'
+import indexOf from './indexOf.js'
+import indexOfParent from './indexOfParent.js'
 
 //查
 import getEl from './getEl.js'
@@ -26,6 +29,12 @@ import getChildren from './getChildren.js'
 import getAttr from './getAttr.js'
 import getWidth from './getWidth.js'
 import getHeight from './getHeight.js'
+import getParent from './getParent.js'
+import getParents from './getParents.js'
+import getNextEl from './getNextEl.js'
+import getPrevEl from './getPrevEl.js'
+import getSiblings from './getSiblings.js'
+import mapParents from './mapParents.js'
 
 export default {
 	createEl,
@@ -44,6 +53,11 @@ export default {
 	getElAll,
 	getHtml,
 	getHtmlOuter,
+	getParent,
+	getParents,
+	getNextEl,
+	getPrevEl,
+	getSiblings,
 	getChildren,
 	getAttr,
 	setHtml,
@@ -52,5 +66,9 @@ export default {
 	insertAfter,
 	setAttrs,
 	getWidth,
-	getHeight
+	getHeight,
+	hasClass,
+	indexOf,
+	indexOfParent,
+	mapParents,
 }

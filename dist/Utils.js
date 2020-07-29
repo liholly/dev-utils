@@ -1,7 +1,7 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 	typeof define === 'function' && define.amd ? define(factory) :
-	(global = global || self, global.Utils = factory());
+	(global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Utils = factory());
 }(this, (function () { 'use strict';
 
 	function isArray (arr) {
@@ -149,30 +149,6 @@
 		});
 
 		return affirm
-	}
-
-	/**
-	 * 防抖函数
-	 * @param fn    源函数
-	 * @param delay    延迟时间
-	 * @returns {*}
-	 */
-	function debounce (fn, delay) {
-		var __present = true;
-		var __arguments;
-
-		return function () {
-			__arguments = arguments;
-
-			//在既定时间内只执行一次
-			if (__present) {
-				__present = false;
-				setTimeout(function () {
-					fn.apply(null, __arguments);
-					__present = true;
-				}, delay || 0);
-			}
-		}
 	}
 
 	function keys(obj) {
@@ -408,28 +384,6 @@
 		return str.replace(/\r?\n/g, "<br />");
 	}
 
-	/**
-	 * 节流函数
-	 * @param fn    源函数
-	 * @param overtime 节流过期时间 int
-	 * @returns {*}
-	 */
-	function throttle (fn, overtime) {
-		var __present = true;
-
-		return function () {
-			//已经过期的才可以执行
-			if (__present) {
-				fn.apply(null, arguments);
-				__present = false;
-				//立即计时
-				setTimeout(function () {
-					__present = true;
-				}, overtime || 0);
-			}
-		}
-	}
-
 	function strIndexOf (agg, str) {
 		var res;
 
@@ -482,7 +436,7 @@
 		clone,
 		compact,
 		complete,
-		debounce,
+		// debounce,
 		each,
 		equal,
 		escape2Html,
@@ -514,7 +468,7 @@
 		return2Br,
 		size,
 		split,
-		throttle,
+		// throttle,
 		strIndexOf,
 		timer,
 		transform,
@@ -618,6 +572,14 @@
 		appendTo(styleEl, getEl('head'));
 	}
 
+	/**
+	 * 添加样式类名称
+	 * 注意做兼容，当前只兼容到ie10
+	 * 要更好兼容要用ele.className的方式
+	 * @param el
+	 * @param className
+	 * @returns {*}
+	 */
 	function addClass (el, className) {
 		if ((typeof el === 'object') && ('length' in el)) el.forEach(function (item) {
 			item.classList.add(className);
@@ -696,6 +658,47 @@
 		return el;
 	}
 
+	/**
+	 * 元素是否包含指定类
+	 * aaa = createEl('div','6666',{class:'lihong mimi'});append(getEl('body'),aaa);
+	 * @param el
+	 * @param className
+	 * @returns {number}
+	 */
+	function hasClass (el, className) {
+		return (el.className || '').split(' ').indexOf(className) > -1;
+	}
+
+	/**
+	 * 元素在指定集合内的下标值，比如getElAll获得的元素集合
+	 * @param el 元素
+	 * @param elLst 元素集合
+	 * @returns {*}
+	 */
+	function indexOf$1 (el, elLst) {
+		var index = -1;
+		for (var i = 0; i < elLst.length; i++) {
+			index = i;
+			if (elLst[i] === el) break;
+		}
+		return index;
+	}
+
+	/**
+	 * 元素在父元素内的下标值
+	 * @param el 元素
+	 * @returns {*}
+	 */
+	function indexOfParent (el) {
+		var children = el.parentNode.children;
+		var index = -1;
+		for (var i = 0; i < children.length; i++) {
+			index = i;
+			if (children[i] === el) break;
+		}
+		return index;
+	}
+
 	function getElAll (el, slt) {
 		var __slt = slt ? slt : el;
 		var __el = slt ? el : document;
@@ -723,12 +726,101 @@
 		return el.getAttribute(attrName)
 	}
 
+	/**
+	 * 获取元素的内外宽px
+	 * @param el	元素
+	 * @param inner	是否为内尺寸
+	 * @returns {number}
+	 */
 	function getWidth (el, inner) {
 		return inner ? el.clientWidth : el.offsetWidth
 	}
 
+	/**
+	 * 获取元素的内外高px
+	 * @param el	元素
+	 * @param inner	是否为内尺寸
+	 * @returns {number}
+	 */
 	function getHeight (el, inner) {
 		return inner ? el.clientHeight : el.offsetHeight
+	}
+
+	/**
+	 * 获取元素的父节点
+	 * @param el
+	 * @returns {*|Node}
+	 */
+	function getParent (el) {
+		return el.parentNode
+	}
+
+	/**
+	 * 获取元素的所有父节点
+	 * append(getEl('body'),createEl('div',{class:'mimi'},'456789',[createEl('div',{class:'mama'},789)]))
+	 * @param el
+	 * @param slt
+	 * @returns {Array}
+	 */
+	function getParents (el, slt) {
+		var res = [];
+
+		while (el.parentNode !== null) {
+			el = el.parentNode;
+			res.push(el);
+		}
+
+		return slt ? el.querySelectorAll(slt) : res;
+	}
+
+	/**
+	 * 获取元素的下一个兄弟节点
+	 * 通过nextSibling或者 previousSibling所获得的HTML标签元素对象的属性问题
+	 * 一般先通过nextSibling.nodeName来获知其标签名，或者通过nextSibling.nodeType来获知其标签类型，
+	 * 然后，如果该nextSibling.nodeName = #text，则通过nextSibling.nodeValue来获知其文本值；
+	 * 否则，可以通过nextSibling.innerHTML等其他常用标签元素属性来获取其属性。
+	 * @param el
+	 * @returns {*|Node}
+	 */
+	function getNextEl(el){
+		return el.nextSibling
+	}
+
+	/**
+	 * 获取元素的上一个元素节点
+	 * @param el
+	 * @returns {*|Node}
+	 */
+	function getPrevEl(el){
+		return el.previousSibling
+	}
+
+	/**
+	 * 获取元素的所有兄弟节点
+	 * @param el
+	 * @returns {*|Node}
+	 */
+	function getSiblings (el) {
+		var a = [];
+		var p = el.parentNode.children;
+		for (var i = 0, pl = p.length; i < pl; i++) {
+			if (p[i] !== el) a.push(p[i]);
+		}
+		return a;
+	}
+
+	/**
+	 * 枚举元素的父元素
+	 * @param el    起始元素
+	 * @param fn    枚举方法
+	 * @returns {*}
+	 */
+	function mapParents (el, fn) {
+		while (el.parentNode !== null && fn) {
+			el = el.parentNode;
+			var _a = fn(el);
+			if (_a === false) break;
+		}
 	}
 
 	//增删改
@@ -750,6 +842,11 @@
 		getElAll,
 		getHtml,
 		getHtmlOuter,
+		getParent,
+		getParents,
+		getNextEl,
+		getPrevEl,
+		getSiblings,
 		getChildren,
 		getAttr,
 		setHtml,
@@ -758,16 +855,47 @@
 		insertAfter,
 		setAttrs,
 		getWidth,
-		getHeight
+		getHeight,
+		hasClass,
+		indexOf: indexOf$1,
+		indexOfParent,
+		mapParents,
 	};
 
-	function addHandler(element, type, handler) { //添加事件
+	function getTarget (event) {  //返回事件的实际目标
+		return event.target || event.srcElement;
+	}
+
+	/**
+	 * 添加事件
+	 * @param element    事件元素
+	 * @param type    事件类型
+	 * @param sltor    代理选择器
+	 * @param handler    事件函数
+	 */
+	function addHandler (element, type, sltor, handler) {
+		var __sltor = handler ? sltor : null;
+		var __handler = handler || sltor;
+		var __finish = false;
+
+		//事件委托
+		function eventFn(e) {
+			if (__sltor) {
+				var parent = getTarget(e).parentNode;
+				if (!__finish && parent.querySelector(__sltor)) {
+					__handler.call(this, e);
+					__finish = true;
+				}
+			}
+			else __handler.call(this, e);
+		}
+
 		if (element.addEventListener) {
-			element.addEventListener(type, handler, false);  //使用DOM2级方法添加事件
+			element.addEventListener(type, eventFn, false);  //使用DOM2级方法添加事件
 		} else if (element.attachEvent) {                    //使用IE方法添加事件
-			element.attachEvent("on" + type, handler);
+			element.attachEvent("on" + type, eventFn);
 		} else {
-			element["on" + type] = handler;          //使用DOM0级方法添加事件
+			element["on" + type] = eventFn;          //使用DOM0级方法添加事件
 		}
 	}
 
@@ -783,10 +911,6 @@
 
 	function getEvent (event) {  //使用这个方法跨浏览器取得event对象
 		return event ? event : window.event;
-	}
-
-	function getTarget (event) {  //返回事件的实际目标
-		return event.target || event.srcElement;
 	}
 
 	function preventDefault (event) {   //阻止事件的默认行为
