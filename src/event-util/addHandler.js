@@ -23,18 +23,27 @@ export default function (element, type, sltor, handler) {
 		var t = null;
 
 		if (__sltor) {
-			mapParents(target, function (ele) {
-				//已经查询已经到达绑定的最外层，则停止
-				if (__wrapper === ele) return false;
-
-				//如果当前被点击的目标在代理范围内，则执行
-				var _p = getParent(ele);
-				if (_p && getEl(_p, __sltor)) {
+			//一次循环都没有的 直接就可以获取到目标的 说明在目标外层了 不算
+			if (!getEl(target, __sltor)) {
+				//目标和事件触发元素一致
+				if (target === element) {
 					execute = true;
-					t = ele;
-					return false
+					t = target;
 				}
-			})
+				//否则向上枚举
+				else mapParents(target, function (ele) {
+					//已经查询已经到达绑定的最外层，则停止
+					if (__wrapper === ele) return false;
+
+					//如果当前被点击的目标在代理范围内，则执行
+					var _p = getParent(ele);
+					if (_p && getEl(_p, __sltor)) {
+						execute = true;
+						t = ele;
+						return false
+					}
+				})
+			}
 		}
 
 		if (__sltor ? execute : true) stop = __handler.call(this, e, t || target);
