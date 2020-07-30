@@ -7,8 +7,10 @@
 export default function (el, elLst) {
 	var index = -1;
 	for (var i = 0; i < elLst.length; i++) {
-		index = i;
-		if (elLst[i] === el) break;
+		if (elLst[i] === el) {
+			index = i;
+			break;
+		}
 	}
 	return index;
 }

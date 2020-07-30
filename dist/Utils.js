@@ -1,7 +1,7 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 	typeof define === 'function' && define.amd ? define(factory) :
-	(global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Utils = factory());
+	(global = global || self, global.Utils = factory());
 }(this, (function () { 'use strict';
 
 	function isArray (arr) {
@@ -149,6 +149,30 @@
 		});
 
 		return affirm
+	}
+
+	/**
+	 * 防抖函数
+	 * @param fn    源函数
+	 * @param delay    延迟时间
+	 * @returns {*}
+	 */
+	function debounce (fn, delay) {
+		var __present = true;
+		var __arguments;
+
+		return function () {
+			__arguments = arguments;
+
+			//在既定时间内只执行一次
+			if (__present) {
+				__present = false;
+				setTimeout(function () {
+					fn.apply(null, __arguments);
+					__present = true;
+				}, delay || 0);
+			}
+		}
 	}
 
 	function keys(obj) {
@@ -384,6 +408,28 @@
 		return str.replace(/\r?\n/g, "<br />");
 	}
 
+	/**
+	 * 节流函数
+	 * @param fn    源函数
+	 * @param overtime 节流过期时间 int
+	 * @returns {*}
+	 */
+	function throttle (fn, overtime) {
+		var __present = true;
+
+		return function () {
+			//已经过期的才可以执行
+			if (__present) {
+				fn.apply(null, arguments);
+				__present = false;
+				//立即计时
+				setTimeout(function () {
+					__present = true;
+				}, overtime || 0);
+			}
+		}
+	}
+
 	function strIndexOf (agg, str) {
 		var res;
 
@@ -436,7 +482,7 @@
 		clone,
 		compact,
 		complete,
-		// debounce,
+		debounce,
 		each,
 		equal,
 		escape2Html,
@@ -468,7 +514,7 @@
 		return2Br,
 		size,
 		split,
-		// throttle,
+		throttle,
 		strIndexOf,
 		timer,
 		transform,
@@ -678,10 +724,21 @@
 	function indexOf$1 (el, elLst) {
 		var index = -1;
 		for (var i = 0; i < elLst.length; i++) {
-			index = i;
-			if (elLst[i] === el) break;
+			if (elLst[i] === el) {
+				index = i;
+				break;
+			}
 		}
 		return index;
+	}
+
+	/**
+	 * 获取元素的父节点
+	 * @param el
+	 * @returns {*|Node}
+	 */
+	function getParent (el) {
+		return el && el.parentNode
 	}
 
 	/**
@@ -690,11 +747,13 @@
 	 * @returns {*}
 	 */
 	function indexOfParent (el) {
-		var children = el.parentNode.children;
+		var children = getParent(el).children;
 		var index = -1;
 		for (var i = 0; i < children.length; i++) {
-			index = i;
-			if (children[i] === el) break;
+			if (children[i] === el) {
+				index = i;
+				break;
+			}
 		}
 		return index;
 	}
@@ -719,7 +778,7 @@
 	 * @returns {children|jQuery.children|boolean|*|HTMLElement[]}
 	 */
 	function getChildren (el) {
-		return el.children
+		return el && el.children
 	}
 
 	function getAttr (el, attrName) {
@@ -747,30 +806,41 @@
 	}
 
 	/**
-	 * 获取元素的父节点
-	 * @param el
-	 * @returns {*|Node}
+	 * 枚举元素的父元素
+	 * @param el    起始元素
+	 * @param fn    枚举方法
+	 * @returns {*}
 	 */
-	function getParent (el) {
-		return el.parentNode
+	function mapParents (el, fn) {
+		while (getParent(el) && fn) {
+			el = getParent(el);
+			var _a = fn(el);
+			if (_a === false) break;
+		}
 	}
 
 	/**
 	 * 获取元素的所有父节点
 	 * append(getEl('body'),createEl('div',{class:'mimi'},'456789',[createEl('div',{class:'mama'},789)]))
-	 * @param el
-	 * @param slt
+	 * @param el    目标元素
+	 * @param slt    指定选择器的父节点
 	 * @returns {Array}
 	 */
 	function getParents (el, slt) {
 		var res = [];
 
-		while (el.parentNode !== null) {
-			el = el.parentNode;
-			res.push(el);
-		}
+		mapParents(el, function (p) {
+			if (slt) {
+				var _p = getParent(p);
+				if (_p && getEl(_p, slt)) {
+					res.push(p);
+					return false
+				}
+			}
+			else res.push(p);
+		});
 
-		return slt ? el.querySelectorAll(slt) : res;
+		return res;
 	}
 
 	/**
@@ -807,20 +877,6 @@
 			if (p[i] !== el) a.push(p[i]);
 		}
 		return a;
-	}
-
-	/**
-	 * 枚举元素的父元素
-	 * @param el    起始元素
-	 * @param fn    枚举方法
-	 * @returns {*}
-	 */
-	function mapParents (el, fn) {
-		while (el.parentNode !== null && fn) {
-			el = el.parentNode;
-			var _a = fn(el);
-			if (_a === false) break;
-		}
 	}
 
 	//增删改
@@ -876,18 +932,32 @@
 	function addHandler (element, type, sltor, handler) {
 		var __sltor = handler ? sltor : null;
 		var __handler = handler || sltor;
-		var __finish = false;
+		var __wrapper = __sltor ? getParent(getEl(element, sltor)) : null;
 
 		//事件委托
 		function eventFn(e) {
+			var stop = null;
+			var target = getTarget(e);
+			var execute = false;
+			var t = null;
+
 			if (__sltor) {
-				var parent = getTarget(e).parentNode;
-				if (!__finish && parent.querySelector(__sltor)) {
-					__handler.call(this, e);
-					__finish = true;
-				}
+				mapParents(target, function (ele) {
+					//已经查询已经到达绑定的最外层，则停止
+					if (__wrapper === ele) return false;
+
+					//如果当前被点击的目标在代理范围内，则执行
+					var _p = getParent(ele);
+					if (_p && getEl(_p, __sltor)) {
+						execute = true;
+						t = ele;
+						return false
+					}
+				});
 			}
-			else __handler.call(this, e);
+
+			if (__sltor ? execute : true) stop = __handler.call(this, e, t || target);
+			if (stop === false) return false;
 		}
 
 		if (element.addEventListener) {

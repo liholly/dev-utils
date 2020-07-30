@@ -6,5 +6,24 @@
 	<script src="/dist/Utils.js" type="text/javascript"></script>
 </head>
 <body>
+<div class="lili">
+	lili
+	<div class="honghong">
+		honghong
+	</div>
+	<div class="junjun" id="junjun">
+		junjun
+		<div class="chen">chen</div>
+		<div class="fenfen">
+			<button>456555</button>
+		</div>
+	</div>
+</div>
+
+<script>
+	addHandler(getEl('#junjun'), 'click', '.fenfen', function (e, target) {
+		console.log(target)
+	});
+</script>
 </body>
 </html>

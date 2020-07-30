@@ -1,4 +1,7 @@
 import getTarget from './getTarget.js'
+import getEl from './../dom-util/getEl.js'
+import getParent from './../dom-util/getParent.js'
+import mapParents from './../dom-util/mapParents.js'
 
 /**
  * 添加事件
@@ -10,18 +13,32 @@ import getTarget from './getTarget.js'
 export default function (element, type, sltor, handler) {
 	var __sltor = handler ? sltor : null;
 	var __handler = handler || sltor;
-	var __finish = false;
+	var __wrapper = __sltor ? getParent(getEl(element, sltor)) : null;
 
 	//事件委托
 	function eventFn(e) {
+		var stop = null;
+		var target = getTarget(e);
+		var execute = false;
+		var t = null;
+
 		if (__sltor) {
-			var parent = getTarget(e).parentNode;
-			if (!__finish && parent.querySelector(__sltor)) {
-				__handler.call(this, e);
-				__finish = true;
-			}
+			mapParents(target, function (ele) {
+				//已经查询已经到达绑定的最外层，则停止
+				if (__wrapper === ele) return false;
+
+				//如果当前被点击的目标在代理范围内，则执行
+				var _p = getParent(ele);
+				if (_p && getEl(_p, __sltor)) {
+					execute = true;
+					t = ele;
+					return false
+				}
+			})
 		}
-		else __handler.call(this, e);
+
+		if (__sltor ? execute : true) stop = __handler.call(this, e, t || target);
+		if (stop === false) return false;
 	}
 
 	if (element.addEventListener) {

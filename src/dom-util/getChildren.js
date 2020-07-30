@@ -4,5 +4,5 @@
  * @returns {children|jQuery.children|boolean|*|HTMLElement[]}
  */
 export default function (el) {
-	return el.children
+	return el && el.children
 }

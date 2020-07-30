@@ -4,5 +4,5 @@
  * @returns {*|Node}
  */
 export default function (el) {
-	return el.parentNode
+	return el && el.parentNode
 }
