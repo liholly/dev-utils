@@ -1,36 +1,40 @@
-var events = window['__util_bus'] = window['__util_bus'] || [];
-
-function setEvent(name, callback) {
-	events.push({name: name, callbacks: [callback]})
-}
+var events = window['__UTIL_BUS__'] = window['__UTIL_BUS__'] || {};
 
 function getEvent(name) {
-	return events.find(function (item) {
-		return item.name === name
-	})
+	return events[name] = events[name] || []
 }
 
-function getCallbacks(name) {
-	var event = getEvent(name);
-	return event ? event.callbacks : null;
+function _on(type, target, fn, once) {
+	if (!fn) return 'Bus event function is none!';
+	fn.$target = target;
+	fn.$once = !!once;
+	getEvent(type).push(fn)
 }
 
 function on(type, fn) {
-	var event = getCallbacks(type);
-	if (event) event.push(fn);
-	else setEvent(type, fn);
+	_on(type, false, fn)
+}
+
+function once(type, fn) {
+	_on(type, false, fn, true)
 }
 
 function emit(type, n) {
-	var i, events = getCallbacks(type);
-	if (events) {
-		for (i = 0; i < events.length; i++) {
-			events[i](n)
+	var evs = events[type] || [];
+	for (var index = evs.length - 1; index > -1; index--) {
+		var e = evs[index];
+		var $t = e.$target;
+		if ($t ? (typeof $t === 'function' ? $t(n) : $t === n) : true) {
+			e(n);
+			if (e.$once) evs.splice(index, 1)
 		}
 	}
 }
 
 export default {
 	on,
-	emit
+	once,
+	emit,
+	events,
+	_on
 }

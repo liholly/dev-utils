@@ -19,6 +19,8 @@ import setAttrs from './setAttrs.js'
 import hasClass from './hasClass.js'
 import indexOf from './indexOf.js'
 import indexOfParent from './indexOfParent.js'
+import replaceClass from './replaceClass.js'
+import toggleClass from './toggleClass.js'
 
 //查
 import getEl from './getEl.js'
@@ -35,6 +37,11 @@ import getNextEl from './getNextEl.js'
 import getPrevEl from './getPrevEl.js'
 import getSiblings from './getSiblings.js'
 import mapParents from './mapParents.js'
+import ieShim from './ieShim.js'
+import isIE from './isIE.js'
+import isHtmlStr from './isHtmlStr.js'
+
+ieShim();
 
 export default {
 	createEl,
@@ -49,6 +56,8 @@ export default {
 	addClass,
 	removeAttr,
 	removeClass,
+	replaceClass,
+	toggleClass,
 	getEl,
 	getElAll,
 	getHtml,
@@ -71,4 +80,6 @@ export default {
 	indexOf,
 	indexOfParent,
 	mapParents,
+	isIE,
+	isHtmlStr
 }

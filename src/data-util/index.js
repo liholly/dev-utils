@@ -8,6 +8,7 @@ import each from './each.js'
 import equal from './equal.js'
 import escape2Html from './escape2Html.js'
 import extend from './extend.js'
+import fileNameTrim from './fileNameTrim.js'
 import filter from './filter.js'
 import find from './find.js'
 import findKey from './findKey.js'
@@ -22,6 +23,7 @@ import isEmpty from './isEmpty.js'
 import isFunction from './isFunction.js'
 import isObject from './isObject.js'
 import isString from './isString.js'
+import isBoolean from './isBoolean.js'
 import keys from './keys.js'
 import keysBy from './keysBy.js'
 import loop from './loop.js'
@@ -33,6 +35,7 @@ import pickBy from './pickBy.js'
 import remove from './remove.js'
 import removeHtmlTab from './removeHtmlTab.js'
 import return2Br from './return2Br.js'
+import ship from './ship.js'
 import size from './size.js'
 import split from './split.js'
 import throttle from './throttle.js'
@@ -53,6 +56,7 @@ export default {
 	equal,
 	escape2Html,
 	extend,
+	fileNameTrim,
 	filter,
 	find,
 	findKey,
@@ -67,6 +71,7 @@ export default {
 	isFunction,
 	isObject,
 	isString,
+	isBoolean,
 	keys,
 	keysBy,
 	loop,

@@ -1,5 +1,5 @@
 export default function (target, path) {
-	if (!target || !path) return target;
+	if (!target) return target;
 	var _t = target,
 		_p = String(path).split('.');
 

@@ -1,5 +1,6 @@
 import getTarget from './getTarget.js'
 import getEl from './../dom-util/getEl.js'
+import getElAll from './../dom-util/getElAll.js'
 import getParent from './../dom-util/getParent.js'
 import mapParents from './../dom-util/mapParents.js'
 
@@ -21,32 +22,46 @@ export default function (element, type, sltor, handler) {
 		var target = getTarget(e);
 		var execute = false;
 		var t = null;
-
+		
 		if (__sltor) {
 			//一次循环都没有的 直接就可以获取到目标的 说明在目标外层了 不算
 			if (!getEl(target, __sltor)) {
-				//目标和事件触发元素一致
-				if (target === element) {
-					execute = true;
-					t = target;
-				}
-				//否则向上枚举
-				else mapParents(target, function (ele) {
-					//已经查询已经到达绑定的最外层，则停止
-					if (__wrapper === ele) return false;
+				//目标和事件触发元素一致的情况也去掉
+				if (target !== element) {
+					function include(children, el) {
+						var _include = false;
 
-					//如果当前被点击的目标在代理范围内，则执行
-					var _p = getParent(ele);
-					if (_p && getEl(_p, __sltor)) {
-						execute = true;
-						t = ele;
-						return false
+						for (var i = 0; i < children.length; i++) {
+							if (children[i] === el) {
+								_include = true;
+								break;
+							}
+						}
+
+						return _include
 					}
-				})
+
+					mapParents(target, function (ele) {
+						//查询已经到达绑定的最外层，则停止
+						if (__wrapper === ele) return false;
+
+						//如果当前被点击的目标在代理元素内(从其父元素使用选择器查找目标，如果能查找到，并且当前元素也在查找到的元素集合之内，则认为是被代理的元素)，则执行
+						var _p = getParent(ele);
+						var _children = _p && getElAll(_p, __sltor);
+						if (_children && include(_children, ele)) {
+							execute = true;
+							t = ele;
+							return false
+						}
+					})
+				}
 			}
 		}
 
+		//根据是否有代理的情况来决定是否执行
 		if (__sltor ? execute : true) stop = __handler.call(this, e, t || target);
+
+		//如果事件函数有返回false，则禁止事件默认行为
 		if (stop === false) return false;
 	}
 
